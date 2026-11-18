@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>Chess Timer · AWTRIX NG</title>
+<meta name="description" content="Schachuhr für Ulanzi TC001 und TC002: mit Tastendruck bedienbar, individuelle Zeitlimits und GitHub-Installation.">
+<meta property="og:title" content="Chess Timer for AWTRIX NG">
+<meta property="og:description" content="Two-player chess clock for Ulanzi TC001 and TC002. Configure and install directly from GitHub.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://raw.githubusercontent.com/Q14siX/ChessTimer/main/media/title.png">
+<style>
+:root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2937;background:#f5f7fa;font-synthesis:none}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh}
+a{color:#2563eb;text-decoration:none}a:hover{text-decoration:underline}
+button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.43;cursor:not-allowed}
+button:focus-visible,input:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #41cdb7;outline-offset:3px}
+button{touch-action:manipulation}
+.hidden{display:none!important}
+.shell{min-height:100vh;display:grid;grid-template-columns:258px minmax(0,1fr)}
+.rail{position:sticky;top:0;height:100vh;padding:28px 20px 22px;background:#121c2b;color:#fff;display:flex;flex-direction:column;gap:32px;border-right:1px solid #17283e}
+.brand{display:flex;gap:13px;align-items:center;padding-left:5px}
+.brand-mark{height:44px;width:44px;border-radius:14px;background:#d5fbec;color:#10271f;display:grid;place-items:center;font-size:30px;line-height:1}
+.brand-title{font-size:19px;font-weight:820;letter-spacing:-.6px}
+.brand-sub{font-size:11px;letter-spacing:1.4px;font-weight:740;color:#a1b3c8;text-transform:uppercase;margin-top:3px}
+.rail-caption{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;font-weight:780;color:#70849c;padding:0 12px;margin-bottom:12px}
+.steps{display:grid;gap:7px}
+.step{display:flex;align-items:center;gap:14px;padding:13px 12px;border-radius:13px;color:#8fa1b6;font-size:14px;font-weight:680;transition:background .2s}
+.step-num{border:1px solid #344156;color:#97aabd;width:30px;height:30px;border-radius:10px;display:grid;place-items:center;flex-shrink:0;font-size:12px;font-weight:850}
+.step.active{color:#f3fffa;background:#23394a}
+.step.active .step-num{background:#a3f6d5;color:#123929;border-color:#a3f6d5}
+.step.complete{color:#bcebdd}.step.complete .step-num{border-color:#47756b;color:#7de8c8}
+.rail-bottom{margin-top:auto;display:grid;gap:18px}
+.rail-tip{border-radius:15px;border:1px solid #324354;background:#1c2b3c;padding:17px}
+.rail-tip b{display:block;font-size:13px;line-height:1.4}.rail-tip p{font-size:12px;color:#9fb3c7;line-height:1.6;margin:7px 0 0}
+.donate img{width:165px;height:auto;display:block;max-width:100%}
+.rail-meta{font-size:11px;color:#70869c}
+.workspace{min-width:0}
+.topbar{min-height:86px;padding:0 clamp(18px,3.4vw,46px);display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid #e4e8ef;background:#fff}
+.topbar-left{font-size:13px;color:#6b7789;font-weight:680}.topbar-left b{color:#172337}
+.version{font-size:11px;color:#758498;background:#f5f7fa;border:1px solid #e4e9ef;border-radius:100px;padding:8px 12px;font-weight:760;white-space:nowrap}
+.page-space{max-width:1240px;margin:auto;padding:clamp(21px,3.6vw,49px) clamp(16px,3.4vw,47px) 45px}
+.eyebrow{font-size:11px;letter-spacing:2px;font-weight:830;text-transform:uppercase;color:#298d83;margin:0 0 10px}
+h1{font-size:clamp(28px,3.4vw,42px);letter-spacing:-1.6px;line-height:1.15;margin:0 0 11px;color:#121e30;font-weight:825}
+h2{font-size:18px;letter-spacing:-.5px;color:#152338;margin:0 0 8px}
+h3{font-size:14px;color:#26364d;margin:0 0 8px}
+p{line-height:1.58}.lead{font-size:15px;color:#6d7c8d;max-width:650px;line-height:1.7;margin:0 0 29px}
+.content-grid{display:grid;grid-template-columns:minmax(0,1.52fr) minmax(265px,.9fr);align-items:start;gap:20px}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:20px;box-shadow:0 4px 18px rgba(20,36,55,.03);padding:25px}
+.card+.card{margin-top:18px}
+.card.headline{padding:27px}
+.card-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+.card-title h2{margin:0}
+.tag{color:#357e75;background:#eafaf3;font-size:11px;font-weight:820;padding:6px 10px;border-radius:100px;white-space:nowrap}
+.muted{color:#718093;font-size:13px;line-height:1.65}.tiny{color:#8391a2;font-size:12px;line-height:1.55}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:grid;gap:8px;min-width:0}
+.field label,.field-label{font-size:12px;font-weight:790;color:#46566e}
+input:not([type=checkbox]){width:100%;min-width:0;min-height:44px;color:#17273b;background:#fff;border-radius:11px;border:1px solid #d8e1eb;padding:10px 12px;transition:border-color .15s,box-shadow .15s}
+input:not([type=checkbox]):focus{border-color:#4fbf9c;box-shadow:0 0 0 3px #d9f7ec;outline:none}
+input:not([type=checkbox]):disabled{background:#f1f4f8;color:#697c8f}
+input[type=checkbox]{accent-color:#0e9f81;width:18px;height:18px;flex-shrink:0;cursor:pointer}
+.sep{height:1px;background:#ecf0f4;margin:23px 0}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{min-height:43px;padding:10px 17px;border-radius:11px;background:#fff;color:#33465e;font-size:13px;font-weight:790;border:1px solid #d6dfe8;display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1.2}
+.btn:hover:not(:disabled){background:#f1f7f6;border-color:#acd8ce}
+.btn.primary{background:#0f947e;color:white;border-color:#0f947e;box-shadow:0 3px 8px #0f947e18}.btn.primary:hover:not(:disabled){background:#087d6b;border-color:#087d6b}
+.btn.dark{background:#14263a;color:#fff;border-color:#14263a}.btn.dark:hover:not(:disabled){background:#213c59;border-color:#213c59}
+.btn.plain{background:transparent;color:#597087;border-color:transparent}
+.btn.compact{min-height:36px;padding:8px 11px;font-size:12px}
+.footer-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:22px}
+.notice{padding:13px 15px;line-height:1.6;border-radius:12px;border:1px solid #d8e5ee;font-size:12px;color:#5c6e81;background:#f5f9fc;margin-top:16px}
+.notice.warn{color:#805e27;background:#fff7e9;border-color:#f4dfb7}
+.notice.error{color:#a0353e;background:#fff0ef;border-color:#f1bdc0}
+.notice.good{color:#216c4f;background:#eaf9f1;border-color:#c4e7d3}
+.status-line{font-size:12px;color:#677c8e;line-height:1.6;margin-top:11px}
+.progress{height:5px;background:#e8eff4;border-radius:100px;overflow:hidden;margin-top:13px}.progress-bar{height:100%;width:0%;background:#1bae91;transition:width .16s}
+.devices{display:grid;gap:10px}
+.device{border:1px solid #e2e8ee;padding:14px;border-radius:13px;background:#fbfcfd}
+.device-main{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.device-choice{display:flex;align-items:center;gap:12px;min-width:0;cursor:pointer;flex:1}
+.device-name{display:block;color:#17263a;font-size:13px;font-weight:810;overflow-wrap:anywhere}.device-sub{display:block;font-size:11px;color:#7b8999;margin-top:4px;overflow-wrap:anywhere}
+.device-model{border-radius:9px;background:#e9f1fb;color:#4f698b;font-size:10px;white-space:nowrap;padding:7px 8px;font-weight:850}
+.device details{margin-top:12px;border-top:1px solid #edf0f3;padding-top:11px}.device summary{font-size:12px;color:#60728a;cursor:pointer}
+.device .credentials{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.empty{border:1px dashed #d5dce6;border-radius:14px;min-height:125px;display:grid;place-content:center;text-align:center;padding:20px;background:#fcfdff}
+.empty b{font-size:13px;color:#697b8f}.empty p{font-size:12px;color:#96a1b1;margin:6px auto 0;max-width:280px}
+.preview-panel{position:sticky;top:24px}
+.preview-panel .card{padding:21px}
+.preview-label{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:14px}
+.preview-label strong{font-size:13px;color:#273b51}.preview-label span{font-size:11px;color:#7d8da1}
+.clock-bezel{padding:14px;background:#15212c;border-radius:15px;box-shadow:inset 0 0 0 5px #1d2e3c,0 9px 18px #0f152017}
+.clock-screen{background:#04070c;border-radius:7px;padding:7px;box-shadow:inset 0 0 8px #000c}
+.clock-screen canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges}
+.preview-sep{margin:20px 0;border-top:1px solid #edf0f3}
+.live-value{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
+.live-time{border-radius:12px;padding:12px;background:#f1faf9;border:1px solid #d4efe9}.live-time:nth-child(2){background:#fff8ef;border-color:#f5e6cd}
+.live-time small{color:#64827d;font-size:11px;display:block;font-weight:740;margin-bottom:5px}.live-time:nth-child(2) small{color:#9a7951}
+.live-time b{font-size:23px;letter-spacing:-1px;color:#21796f;font-variant-numeric:tabular-nums}.live-time:nth-child(2) b{color:#a16e2d}
+.mode-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:19px}
+.mode-chip{font-weight:750;border:1px solid #dbe4e9;border-radius:10px;color:#4b5a70;background:#fff;padding:9px 14px;font-size:12px}
+.mode-chip.active{color:#086f61;background:#e4f8f1;border-color:#61d2b0}
+.same-label{display:flex;gap:11px;align-items:center;font-size:13px;font-weight:760;color:#334860;background:#f4f8fb;padding:14px 16px;border-radius:11px;margin-bottom:17px;cursor:pointer}
+.time-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.time-card{padding:20px;border:1px solid #dbe7e9;border-radius:17px;background:#f7fcfb}.time-card.darkside{background:#fffaf3;border-color:#f0e0c7}
+.player-name{display:flex;align-items:center;gap:10px;margin-bottom:14px;color:#183b45;font-weight:820;font-size:14px}
+.player-name .disk{height:12px;width:12px;background:#24a6a0;border-radius:50%}.darkside .disk{background:#d29c52}
+.time-fields{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.time-fields .field{width:calc((100% - 26px)/2)}.time-fields input{font-size:27px!important;font-weight:810!important;letter-spacing:-.8px!important;font-variant-numeric:tabular-nums;text-align:center;min-height:61px!important}
+.colon{font-size:24px;font-weight:820;color:#a4b0ba}
+.field-under{font-size:11px;text-align:center;color:#7f90a0;font-weight:720}
+.features{display:grid;gap:14px}.feature{display:flex;gap:12px;font-size:12px;color:#61738a;line-height:1.6}.feature .dot{height:26px;width:26px;flex-shrink:0;border-radius:9px;background:#ecf5f3;display:grid;place-items:center;color:#15776a;font-weight:850}
+.checkline{display:flex;align-items:center;gap:11px;cursor:pointer;font-size:13px;color:#4d6075;line-height:1.4}
+.review-list{display:grid;gap:11px}.review-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 16px;background:#f9fbfd;border:1px solid #e1e8ef;border-radius:12px}
+.review-item strong{font-size:13px;color:#26394f}.review-item p{margin:5px 0 0;font-size:11px;color:#8391a1}
+.result-list{display:grid;gap:10px}.result-item{display:flex;align-items:flex-start;gap:12px;padding:15px;border:1px solid #dee8f0;background:#fcfdff;border-radius:13px}
+.result-dot{width:27px;height:27px;flex-shrink:0;border-radius:9px;display:grid;place-items:center;background:#e3f6e9;color:#217a57;font-weight:850}
+.result-item.error .result-dot{background:#ffeded;color:#b94551}
+.result-item strong{font-size:13px;color:#263a50}.result-item p{margin:4px 0 0;color:#768598;font-size:12px;line-height:1.55}
+.manual{margin-top:24px}.manual ol{padding-left:20px;font-size:13px;color:#5c6f82;line-height:1.8}
+.footer{font-size:11px;color:#8090a3;padding:26px 0 4px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(max-width:1120px){.content-grid{grid-template-columns:minmax(0,1fr)}.preview-panel{position:static}.preview-pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}.preview-pair .preview-sep{display:none}.preview-pair .clock-bezel{margin:0}}
+@media(max-width:800px){.shell{display:block}.rail{position:static;height:auto;padding:16px 18px 14px;gap:16px}.rail-bottom,.rail-caption{display:none}.rail .steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.step{padding:9px 5px;justify-content:center;font-size:11px;gap:6px}.step-num{width:26px;height:26px;border-radius:9px}.step-label{display:none}.topbar{min-height:56px}.page-space{padding:25px 17px}.preview-panel{position:static}}
+@media(max-width:580px){.form-grid,.time-grid,.preview-pair{grid-template-columns:1fr}.card{padding:18px}.time-card{padding:15px}.topbar{padding:0 16px}.lead{font-size:14px}.page-space{padding:22px 12px}.footer-nav .btn{flex:1}.btn{padding:10px 12px}.version{font-size:10px}.review-item{align-items:start;flex-direction:column}.preview-panel .card{padding:18px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+.github-hero{width:100%;height:195px;overflow:hidden;margin:0 0 22px;border-radius:20px;border:1px solid #283748;background:#111d2c;box-shadow:0 12px 30px rgba(19,29,45,.12)}
+.github-hero img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 39%}
+@media(max-width:800px){.github-hero{height:170px}}
+@media(max-width:580px){.github-hero{height:125px}}
+.mobile-donate{display:none}
+@media(max-width:800px){.mobile-donate{display:flex;justify-content:center;margin:0 0 18px}.mobile-donate img{display:block;width:165px;height:auto}}
+</style>
+</head>
+<body>
+<div class="shell">
+<aside class="rail">
+<div class="brand"><div class="brand-mark" aria-hidden="true">♟</div><div><div class="brand-title">Chess Timer</div><div class="brand-sub">AWTRIX NG</div></div></div>
+<div><div class="rail-caption">Installationsassistent</div>
+<nav class="steps" aria-label="Schritte">
+<div class="step active" data-step="1" aria-current="step"><span class="step-num">01</span><span class="step-label">Uhren verbinden</span></div>
+<div class="step" data-step="2"><span class="step-num">02</span><span class="step-label">Bedenkzeit festlegen</span></div>
+<div class="step" data-step="3"><span class="step-num">03</span><span class="step-label">Installation prüfen</span></div>
+<div class="step" data-step="4"><span class="step-num">04</span><span class="step-label">Ergebnis</span></div>
+</nav></div>
+<div class="rail-bottom"><div class="rail-tip"><b>Bereit für deine Partie</b><p>Die Zeitmessung läuft auf der Uhr. Nach der Einrichtung ist keine Verbindung zu diesem Browser nötig.</p></div>
+<a class="donate" href="https://buymeacoffee.com/q14six" target="_blank" rel="noopener noreferrer" aria-label="Buy Me a Coffee"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" width="165"></a>
+<div class="rail-meta">Q14siX · Open Source · MIT</div></div>
+</aside>
+<div class="workspace">
+<header class="topbar"><div class="topbar-left"><b>AWTRIX NG</b> / Ulanzi TC001 &amp; TC002</div><div class="version">v<span id="version">20261118.214215</span></div></header>
+<div class="page-space">
+<section id="step1" class="view">
+<p class="eyebrow">01 / Geräte</p><h1>Deine Uhren.<br>Ein Spiel.</h1><p class="lead">Wähle eine oder mehrere Ulanzi-Uhren aus. Die passende App-Version wird für jede Uhr automatisch ausgewählt.</p>
+<div class="github-hero"><img src="https://raw.githubusercontent.com/Q14siX/ChessTimer/main/media/title.png" alt="Chess Timer für Ulanzi TC001 und TC002 – offizielles Titelbild" loading="eager" decoding="async"></div>
+<div class="content-grid">
+<div>
+<div class="card">
+<div class="card-title"><h2>Geräte finden</h2><span class="tag">Lokales Netzwerk</span></div>
+<div class="form-grid"><div class="field"><label for="subnet">Netzwerkbereich</label><input id="subnet" value="192.168.178" inputmode="decimal" placeholder="192.168.178" autocomplete="off"><span class="tiny">Prüft Adressen von .1 bis .254</span></div><div class="field"><label for="manualHost">IP-Adresse direkt eingeben</label><input id="manualHost" placeholder="192.168.178.42" autocapitalize="off" autocomplete="off" spellcheck="false"><span class="tiny">Auch .local-Hostnamen möglich</span></div></div>
+<div class="sep"></div>
+<div class="form-grid"><div class="field"><label for="authUser">Benutzername bei geschützter Uhr</label><input id="authUser" value="admin" autocomplete="username"></div><div class="field"><label for="authPass">Passwort</label><input id="authPass" type="password" autocomplete="current-password" placeholder="Nur falls aktiviert"></div></div>
+<div class="actions" style="margin-top:21px"><button class="btn primary" id="scanBtn">Uhren suchen</button><button class="btn" id="manualBtn">Adresse prüfen</button><button class="btn plain hidden" id="stopBtn">Suche abbrechen</button></div>
+<div id="scanProgress" class="hidden"><div class="progress"><div class="progress-bar" id="scanFill"></div></div><div class="status-line" id="scanCount"></div></div>
+<div class="status-line" id="discoverMsg" role="status" aria-live="polite"></div>
+</div>
+<div class="card">
+<div class="card-title"><h2>Ausgewählte Uhren</h2><span class="tag"><span id="deviceCount">0</span> erkannt</span></div>
+<div id="deviceList" class="devices" aria-live="polite"><div class="empty"><b>Noch keine Uhr verbunden</b><p>Suche starten oder die Adresse deiner Uhr eintragen.</p></div></div>
+<div class="footer-nav"><button class="btn plain" id="offlineNext">Ohne Verbindung fortfahren</button><button class="btn primary" id="to2" disabled>Zeitlimit einstellen</button></div>
+</div>
+</div>
+<aside class="preview-panel"><div class="card"><div class="preview-label"><strong>Geräte-Vorschau</strong><span>LED-Anzeige</span></div>
+<div class="preview-pair"><div><div class="preview-label"><strong>TC001</strong><span>32 × 8 Pixel</span></div><div class="clock-bezel"><div class="clock-screen"><canvas id="preview1" width="32" height="8" role="img" aria-label="Vorschau der TC001-Schachuhr"></canvas></div></div></div><div class="preview-sep"></div>
+<div><div class="preview-label"><strong>TC002</strong><span>52 × 16 Pixel</span></div><div class="clock-bezel"><div class="clock-screen"><canvas id="preview2" width="52" height="16" role="img" aria-label="Vorschau der TC002-Schachuhr"></canvas></div></div></div></div>
+<div class="live-value"><div class="live-time"><small>Spieler 1</small><b id="previewWhite">05:00</b></div><div class="live-time"><small>Spieler 2</small><b id="previewBlack">05:00</b></div></div>
+</div><div class="card" style="margin-top:16px"><h3>Direkt auf der Uhr</h3><div class="features"><div class="feature"><span class="dot">01</span>Starten, pausieren und fortsetzen mit der mittleren Taste.</div><div class="feature"><span class="dot">02</span>Spielerwechsel mit der linken oder rechten Taste.</div><div class="feature"><span class="dot">03</span>Reset durch langes Drücken links bei Pause.</div></div></div></aside>
+</div>
+</section>
+<section id="step2" class="view hidden">
+<p class="eyebrow">02 / Zeitkontrolle</p><h1>Wie viel Zeit hat<br>jeder Spieler?</h1><p class="lead">Lege die gesamte Bedenkzeit pro Spieler fest. Über „Zeitlimit übertragen“ kannst du diese Werte auch später ohne Neuinstallation ändern.</p>
+<div class="content-grid">
+<div>
+<div class="card">
+<div class="card-title"><h2>Zeitlimit</h2><span class="tag">Minuten : Sekunden</span></div>
+<div class="field-label" style="margin-bottom:11px">Schnellauswahl</div>
+<div class="mode-chips" id="presets"><button class="mode-chip" data-minutes="1">1 Min.</button><button class="mode-chip" data-minutes="3">3 Min.</button><button class="mode-chip active" data-minutes="5">5 Min.</button><button class="mode-chip" data-minutes="10">10 Min.</button><button class="mode-chip" data-minutes="15">15 Min.</button><button class="mode-chip" data-minutes="30">30 Min.</button><button class="mode-chip" data-minutes="60">60 Min.</button></div>
+<label class="same-label"><input id="sameForBoth" type="checkbox" checked> Gleiche Zeit für beide Spieler verwenden</label>
+<div class="time-grid"><div class="time-card"><div class="player-name"><span class="disk"></span>Spieler 1</div><div class="time-fields"><div class="field"><input id="whiteMin" type="number" inputmode="numeric" min="0" max="99" step="1" value="5" aria-label="Spieler 1 Minuten"><span class="field-under">Minuten</span></div><span class="colon">:</span><div class="field"><input id="whiteSec" type="number" inputmode="numeric" min="0" max="59" step="1" value="0" aria-label="Spieler 1 Sekunden"><span class="field-under">Sekunden</span></div></div></div>
+<div class="time-card darkside"><div class="player-name"><span class="disk"></span>Spieler 2</div><div class="time-fields"><div class="field"><input id="blackMin" type="number" inputmode="numeric" min="0" max="99" step="1" value="5" aria-label="Spieler 2 Minuten" disabled><span class="field-under">Minuten</span></div><span class="colon">:</span><div class="field"><input id="blackSec" type="number" inputmode="numeric" min="0" max="59" step="1" value="0" aria-label="Spieler 2 Sekunden" disabled><span class="field-under">Sekunden</span></div></div></div></div>
+<div id="timeFeedback" class="status-line" role="status" aria-live="polite">Einstellbar von 00:01 bis 99:59 pro Spieler.</div>
+<div class="notice warn">Das Ändern der Bedenkzeit über die Weboberfläche startet die App neu. Eine laufende Partie wird dabei zurückgesetzt.</div>
+<div class="sep"></div>
+<div class="actions"><button class="btn" id="loadSettings">Von ausgewählter Uhr laden</button><button class="btn dark" id="saveSettings">Zeitlimit übertragen</button></div>
+</div>
+<div class="card"><h2>Steuerung an der Uhr</h2><div class="features"><div class="feature"><span class="dot">L</span>Links kurz: Zug von Spieler 1 beenden.</div><div class="feature"><span class="dot">R</span>Rechts kurz: Zug von Spieler 2 beenden.</div><div class="feature"><span class="dot">●</span>Mitte kurz: Start / Pause / Fortsetzen.</div><div class="feature"><span class="dot">↺</span>Links lang (pausiert): Zurücksetzen.</div><div class="feature"><span class="dot">+</span>Rechts lang (pausiert): Zeitvorgabe wechseln.</div></div><p class="tiny" style="margin:15px 0 0">TC002: Drehknopf kurz = Start/Pause; drehen in Pause = Zeitvorgabe; lang = Reset. Mitte lang öffnet das Uhrenmenü.</p></div>
+<div class="footer-nav"><button class="btn plain" data-back="1">Zurück</button><div class="actions"><button class="btn" id="manualShow">Manuelles Skript</button><button class="btn primary" id="to3">Weiter zur Installation</button></div></div>
+</div>
+<aside class="preview-panel"><div class="card"><div class="preview-label"><strong>Live-Vorschau</strong><span>Startzustand</span></div>
+<div class="preview-pair"><div><div class="preview-label"><strong>TC001</strong><span>32 × 8</span></div><div class="clock-bezel"><div class="clock-screen"><canvas id="preview3" width="32" height="8" role="img" aria-label="TC001: zwei Bedenkzeiten"></canvas></div></div></div><div class="preview-sep"></div><div><div class="preview-label"><strong>TC002</strong><span>52 × 16</span></div><div class="clock-bezel"><div class="clock-screen"><canvas id="preview4" width="52" height="16" role="img" aria-label="TC002: zwei Bedenkzeiten"></canvas></div></div></div></div>
+<div class="live-value"><div class="live-time"><small>Spieler 1</small><b id="previewWhite2">05:00</b></div><div class="live-time"><small>Spieler 2</small><b id="previewBlack2">05:00</b></div></div>
+</div><div class="card" style="margin-top:16px"><h3>Nach der Installation</h3><p class="muted" style="margin:0">Die Zeit kann jederzeit hier oder in der AWTRIX-Weboberfläche unter <b>Apps → Chess Timer → Einstellungen</b> geändert werden.</p></div></aside>
+</div>
+</section>
+<section id="step3" class="view hidden">
+<p class="eyebrow">03 / Installation</p><h1>Alles bereit<br>für den Start.</h1><p class="lead">Prüfe Geräte und Zeiten. Vorhandene Chess-Timer-Versionen werden aktualisiert, die eingestellten Zeitlimits anschließend gespeichert.</p>
+<div class="card" style="max-width:830px"><div class="card-title"><h2>Installationsübersicht</h2><span class="tag" id="reviewCount">0 Uhren</span></div><div id="reviewList" class="review-list"></div>
+<div class="sep"></div><label class="checkline"><input id="startAfter" type="checkbox" checked>Schachuhr nach der Installation direkt öffnen</label>
+<div class="notice">Die Skripte werden bei der Installation aus dem GitHub-Repository geladen. Die Partie beginnt mit einem kurzen Druck auf die mittlere Taste der Uhr.</div><div id="installProgress" class="status-line" aria-live="polite"></div>
+<div class="footer-nav"><button class="btn plain" data-back="2" id="back3">Zurück</button><button class="btn primary" id="installBtn">Auf Uhren installieren</button></div></div>
+</section>
+<section id="step4" class="view hidden">
+<p class="eyebrow">04 / Ergebnis</p><h1 id="resultTitle">Übertragung abgeschlossen.</h1><p class="lead" id="resultSubtitle">Hier siehst du die Rückmeldungen deiner Uhren.</p>
+<div class="card" style="max-width:830px"><div class="card-title"><h2>Gerätestatus</h2><span class="tag" id="resultCount">0 Geräte</span></div><div id="resultList" class="result-list"></div><div class="notice">Zum Starten die Schachuhr über das <b>Scripts-Menü</b> an der Uhr öffnen. Mit der mittleren Taste startet der Countdown.</div>
+<div class="footer-nav"><button class="btn" id="restartWizard">Weitere Uhren wählen</button><div class="actions"><button class="btn dark" id="reconfigure">Zeitlimit erneut ändern</button><button class="btn plain" id="manualFinish">Manuelle Installation</button></div></div></div>
+</section>
+<section class="card manual hidden" id="manualSection" aria-live="polite">
+<div class="card-title"><h2>Manuelle Installation</h2><button class="btn compact plain" id="closeManual">Schließen</button></div>
+<p class="muted">Wenn dein Browser den lokalen Netzwerkzugriff verhindert, installiere das Skript direkt in der AWTRIX-NG-Weboberfläche. Die Skriptdatei kommt direkt aus dem GitHub-Repository; die aktuelle Bedenkzeit wird in der heruntergeladenen Fassung voreingestellt.</p>
+<div class="form-grid"><div class="field"><label for="manualModel">Uhrenmodell</label><select id="manualModel" style="width:100%;min-height:44px;border:1px solid #d8e1eb;border-radius:11px;padding:10px;background:white"><option value="tc001">Ulanzi TC001 / 32 × 8</option><option value="tc002">Ulanzi TC002 / 52 × 16</option></select></div><div class="field"><label for="manualURL">IP-Adresse deiner Uhr</label><input id="manualURL" autocomplete="off" placeholder="192.168.178.42"></div></div>
+<div class="actions" style="margin-top:20px"><button class="btn primary" id="copyCode">Skript kopieren</button><button class="btn" id="downloadCode">.ax-Datei speichern</button><button class="btn plain" id="openWeb">Uhrenoberfläche öffnen</button></div>
+<div id="copyFeedback" class="status-line" aria-live="polite"></div>
+<div class="tiny" style="margin-top:7px">Quellskripte: <a target="_blank" rel="noopener noreferrer" href="https://raw.githubusercontent.com/Q14siX/ChessTimer/main/clocks/TC001.ax">TC001.ax</a> · <a target="_blank" rel="noopener noreferrer" href="https://raw.githubusercontent.com/Q14siX/ChessTimer/main/clocks/TC002.ax">TC002.ax</a></div>
+<ol><li>Weboberfläche der AWTRIX-NG-Uhr öffnen und unter <b>Scripts</b> ein neues Skript mit dem Installationsnamen <b>ChessTimer</b> erstellen.</li><li>Den kopierten Code einfügen oder die passende <b>.ax</b>-Datei importieren und speichern.</li><li>Die Schachuhr am Gerät unter <b>Scripts → ChessTimer</b> starten. Die Bedenkzeit lässt sich über <b>Apps → Chess Timer → Einstellungen</b> ändern.</li></ol>
+</section>
+<footer class="footer"><a class="mobile-donate" href="https://buymeacoffee.com/q14six" target="_blank" rel="noopener noreferrer" aria-label="Buy Me a Coffee"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" width="165"></a><span>Chess Timer · Q14siX · Ulanzi TC001 / TC002</span><span>AWTRIX NG · <span id="footerVersion">20261118.214215</span></span></footer>
+</div></div></div>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const appName='ChessTimer';
+const devices=new Map();
+const controllers=new Set();
+let currentStep=1,scanning=false,stopScan=false,installing=false;
+// Canonical GitHub RAW assets. No Berry sources or title image are bundled in the installer.
+const GITHUB_RAW=Object.freeze({
+ title:'https://raw.githubusercontent.com/Q14siX/ChessTimer/main/media/title.png',
+ tc001:'https://raw.githubusercontent.com/Q14siX/ChessTimer/main/clocks/TC001.ax',
+ tc002:'https://raw.githubusercontent.com/Q14siX/ChessTimer/main/clocks/TC002.ax'
+});
+const scriptCache=new Map();
+async function githubScript(model){
+ if(!GITHUB_RAW[model]||!['tc001','tc002'].includes(model))throw new Error('Das Uhrenmodell wird nicht unterstützt.');
+ if(scriptCache.has(model))return scriptCache.get(model);
+ const request=(async()=>{
+  let response;
+  try{response=await fetch(GITHUB_RAW[model],{mode:'cors',cache:'no-store'});}
+  catch{throw new Error('Skript kann nicht von GitHub geladen werden. Internetverbindung und Repository prüfen.');}
+  if(!response.ok)throw new Error('GitHub-Skript '+model.toUpperCase()+' nicht erreichbar (HTTP '+response.status+'). Sind die Dateien unter clocks/ veröffentlicht?');
+  const source=(await response.text()).trim();
+  const display=model==='tc001'?'32x8':'52x16';
+  if(!source.includes('# @display '+display)||!source.includes('class ChessTimer')||!source.includes('return ChessTimer()'))throw new Error('Die abgerufene Datei ist kein passendes Chess-Timer-Skript für '+model.toUpperCase()+'.');
+  return source;
+ })();
+ scriptCache.set(model,request);
+ try{return await request}catch(err){scriptCache.delete(model);throw err}
+}
+const keys=['white_min','white_sec','black_min','black_sec'];
+const inputs={white_min:$('whiteMin'),white_sec:$('whiteSec'),black_min:$('blackMin'),black_sec:$('blackSec')};
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const selected=()=>[...devices.values()].filter(d=>d.selected);
+function hostFrom(raw){
+ const s=String(raw).trim().replace(/^https?:\/\//i,'').replace(/\/$/,'');
+ if(!s||!/^([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+$/.test(s)||s.length>253||s.includes('..'))throw Error('Bitte eine IP-Adresse oder einen .local-Hostnamen ohne Pfad eingeben.');
+ if(/^\d+(\.\d+){3}$/.test(s)&&(s.split('.').some(n=>Number(n)>255||n.length>3)))throw Error('Ungültige IP-Adresse.');
+ return s.toLowerCase();
+}
+function basicHeader(user,pass){
+ if(!pass)return {};
+ const bytes=new TextEncoder().encode(`${user}:${pass}`);
+ let binary='';for(const value of bytes)binary+=String.fromCharCode(value);
+ return {Authorization:'Basic '+btoa(binary)};
+}
+async function api(host,path,{method='GET',body=null,user='',pass='',timeout=2200}={}){
+ const controller=new AbortController();controllers.add(controller);
+ const alarm=setTimeout(()=>controller.abort(),timeout);
+ try{
+  const headers={...basicHeader(user,pass)};
+  if(body!==null)headers['Content-Type']=typeof body==='string'?'text/plain;charset=utf-8':'application/json';
+  const response=await fetch('http://'+host+path,{method,headers,body:body===null?undefined:typeof body==='string'?body:JSON.stringify(body),cache:'no-store',credentials:'omit',mode:'cors',targetAddressSpace:'local',signal:controller.signal});
+  const raw=await response.text();let result;
+  try{result=JSON.parse(raw)}catch{result=raw}
+  if(!response.ok){
+   const detail=typeof result?.error==='object'?result.error.message:typeof result?.message==='string'?result.message:'';
+   throw Object.assign(new Error(response.status===401?'Anmeldung fehlgeschlagen. Benutzername oder Passwort prüfen.':detail||'HTTP '+response.status),{status:response.status});
+  }
+  return result;
+ }catch(e){
+  if(e?.name==='AbortError')throw new Error('Zeitüberschreitung oder Verbindung abgebrochen.');
+  if(e instanceof TypeError)throw new Error('Browser oder Netzwerk blockiert den Zugriff auf die Uhr.');
+  throw e;
+ }finally{clearTimeout(alarm);controllers.delete(controller)}
+}
+async function detect(host,user,pass){
+ const opts={user,pass,timeout:1700};
+ const info=await api(host,'/api/v1/device',opts);
+ const type=String(info?.boardType||'').toLowerCase();
+ if(!['awtrixng','tc002'].includes(type))throw new Error('Keine kompatible AWTRIX-NG-Firmware erkannt.');
+ const caps=await api(host,'/api/v1/capabilities',opts);
+ const w=Number(caps?.display?.width),h=Number(caps?.display?.height);
+ const model=w===32&&h===8?'tc001':w===52&&h===16?'tc002':null;
+ if(!model)throw new Error('Displayauflösung nicht unterstützt ('+w+' × '+h+').');
+ if(info.scriptingRunning===false)throw new Error('Berry-Skripte sind auf der Uhr deaktiviert.');
+ return {host,user,pass,model,hostname:String(info.hostname||host),version:String(info.version||''),selected:true};
+}
+const labelFor=d=>d.model==='tc002'?'TC002 · 52 × 16':'TC001 · 32 × 8';
+function message(id,text,kind=''){
+ const e=$(id);e.textContent=text||'';
+ if(kind)e.className='notice '+kind;
+ else e.className='status-line';
+}
+function renderDevices(){
+ $('deviceCount').textContent=String(devices.size);
+ const parent=$('deviceList');parent.replaceChildren();
+ if(devices.size===0){parent.innerHTML='<div class="empty"><b>Noch keine Uhr verbunden</b><p>Suche starten oder die Adresse deiner Uhr eintragen.</p></div>';}
+ for(const d of devices.values()){
+  const card=document.createElement('div');card.className='device';
+  card.innerHTML=`<div class="device-main"><label class="device-choice"><input type="checkbox" class="devPick" ${d.selected?'checked':''}><span><span class="device-name">${safe(d.hostname)}</span><span class="device-sub">${safe(d.host)} · ${safe(d.version)}</span></span></label><span class="device-model">${safe(labelFor(d))}</span></div><details><summary>Zugangsdaten dieser Uhr ändern</summary><div class="credentials"><input class="devUser" placeholder="Benutzername" aria-label="Benutzername für ${safe(d.host)}"><input type="password" class="devPass" placeholder="Passwort" aria-label="Passwort für ${safe(d.host)}"></div></details>`;
+  card.querySelector('.devPick').addEventListener('change',e=>{d.selected=e.target.checked;syncActions()});
+  const u=card.querySelector('.devUser'),p=card.querySelector('.devPass');u.value=d.user;p.value=d.pass;
+  u.addEventListener('input',e=>d.user=e.target.value);p.addEventListener('input',e=>d.pass=e.target.value);
+  parent.append(card);
+ }
+ syncActions();
+}
+function showStep(n){
+ currentStep=n;
+ for(let i=1;i<=4;i++){
+  $('step'+i).classList.toggle('hidden',i!==n);
+  const nav=document.querySelector(`.step[data-step="${i}"]`);
+  nav.classList.toggle('active',i===n);nav.classList.toggle('complete',i<n);
+  if(i===n)nav.setAttribute('aria-current','step');else nav.removeAttribute('aria-current');
+ }
+ $('manualSection').classList.add('hidden');
+ window.scrollTo({top:0,behavior:'smooth'});
+ syncActions();
+}
+function syncActions(){
+ const have=selected().length>0&&!scanning;
+ let valid=false;
+ try{getTimes();valid=true}catch{}
+ $('to2').disabled=!have;
+ $('to3').disabled=!have||!valid;
+ $('saveSettings').disabled=!have||!valid||installing;
+ $('loadSettings').disabled=!have||installing;
+}
+async function addHost(raw){
+ let host;try{host=hostFrom(raw)}catch(e){message('discoverMsg',e.message,'error');return}
+ if(devices.has(host)){message('discoverMsg','Diese Uhr steht bereits in der Liste.');return}
+ const user=$('authUser').value,pass=$('authPass').value;
+ message('discoverMsg','Verbinde mit '+host+' …');
+ try{
+  const d=await detect(host,user,pass);
+  devices.set(host,d);renderDevices();$('manualURL').value=host;
+  message('discoverMsg','Uhr verbunden und ausgewählt.','good');
+ }catch(e){
+  $('manualURL').value=host;
+  message('discoverMsg',host+': '+e.message+' Nutze bei Bedarf die manuelle Installation.','error');
+ }
+}
+function subnetValue(){
+ const s=$('subnet').value.trim();
+ if(!/^(\d{1,3}\.){2}\d{1,3}$/.test(s)||s.split('.').some(v=>Number(v)>255))throw new Error('Netzwerkbereich eingeben, z. B. 192.168.178');
+ return s;
+}
+async function scan(){
+ if(scanning)return;
+ let prefix;try{prefix=subnetValue()}catch(e){message('discoverMsg',e.message,'error');return}
+ scanning=true;stopScan=false;syncActions();$('scanBtn').disabled=true;$('stopBtn').classList.remove('hidden');$('scanProgress').classList.remove('hidden');
+ let count=0,found=0,protectedCount=0,cursor=1;const user=$('authUser').value,pass=$('authPass').value;
+ function progress(){count++;$('scanFill').style.width=Math.round(count/254*100)+'%';$('scanCount').textContent=`${count} / 254 Adressen geprüft · ${found} erkannt`+(protectedCount?` · ${protectedCount} geschützt`:'');}
+ async function worker(){
+  while(!stopScan&&cursor<=254){
+   const host=prefix+'.'+cursor++;
+   if(devices.has(host)){progress();continue}
+   try{const d=await detect(host,user,pass);if(!stopScan){devices.set(host,d);found++;renderDevices()}}
+   catch(e){if(e.status===401)protectedCount++}
+   progress();
+  }
+ }
+ try{
+  await Promise.all(Array.from({length:12},()=>worker()));
+  message('discoverMsg',stopScan?'Netzwerksuche abgebrochen.':found?`${found} weitere Uhr(en) erkannt. Wähle die gewünschten Geräte aus.`:'Keine neue Uhr erkannt. Prüfe Adresse, Zugangsdaten oder Browserfreigaben.',found?'good':'');
+ }finally{scanning=false;$('scanBtn').disabled=false;$('stopBtn').classList.add('hidden');syncActions()}
+}
+function readInt(el,max){
+ const value=el.value.trim();
+ if(!/^\d{1,2}$/.test(value))throw new Error('Bitte nur ganze Minuten und Sekunden eingeben.');
+ const n=Number(value);if(n<0||n>max)throw new Error(max===99?'Minuten müssen zwischen 0 und 99 liegen.':'Sekunden müssen zwischen 0 und 59 liegen.');
+ return n;
+}
+function getTimes(){
+ const white_min=readInt(inputs.white_min,99),white_sec=readInt(inputs.white_sec,59);
+ let black_min=readInt(inputs.black_min,99),black_sec=readInt(inputs.black_sec,59);
+ if($('sameForBoth').checked){black_min=white_min;black_sec=white_sec;}
+ if(white_min*60+white_sec<1||black_min*60+black_sec<1)throw new Error('Jeder Spieler benötigt mindestens 1 Sekunde Bedenkzeit.');
+ return {white_min,white_sec,black_min,black_sec};
+}
+const timeString=(m,s)=>String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+function syncFields(){
+ if($('sameForBoth').checked){inputs.black_min.value=inputs.white_min.value;inputs.black_sec.value=inputs.white_sec.value;}
+ inputs.black_min.disabled=$('sameForBoth').checked;inputs.black_sec.disabled=$('sameForBoth').checked;
+}
+function syncPresets(){
+ let match=false;
+ try{
+  const v=getTimes();
+  for(const button of document.querySelectorAll('.mode-chip')){
+   const n=Number(button.dataset.minutes),ok=v.white_min===n&&v.white_sec===0&&v.black_min===n&&v.black_sec===0;
+   button.classList.toggle('active',ok);match=match||ok;
+  }
+ }catch{for(const button of document.querySelectorAll('.mode-chip'))button.classList.remove('active')}
+}
+function timeChanged(){
+ syncFields();syncPresets();
+ try{getTimes();message('timeFeedback','Einstellbar von 00:01 bis 99:59 pro Spieler.');}
+ catch(e){message('timeFeedback',e.message,'error')}
+ updatePreviews();syncActions();
+}
+function applyTimes(v){
+ for(const key of keys)inputs[key].value=String(v[key]);
+ $('sameForBoth').checked=v.white_min===v.black_min&&v.white_sec===v.black_sec;
+ timeChanged();
+}
+async function sourceFor(model){
+ const base=await githubScript(model);
+ const v=getTimes();
+ const replaced=new Set();
+ const body=base.replace(/^(# @config\s+(white_min|white_sec|black_min|black_sec)\s+number\b[^\n]*?\bdefault=)\d+/gm,(_,p,k)=>{replaced.add(k);return p+String(v[k])});
+ if(replaced.size!==4)throw new Error('Die Bedenkzeit konnte nicht in das Skript übernommen werden.');
+ return body;
+}
+function assertResult(answer,label){
+ if(answer?.ok!==true||answer?.error!==null)throw new Error(label+': '+(answer?.error?.message||'Rückmeldung der Uhr ist fehlerhaft.'));
+}
+function getFieldValues(config){
+ if(!Array.isArray(config?.fields))throw new Error('Diese Uhr liefert keine App-Einstellungen.');
+ const values={};
+ for(const field of config.fields){if(keys.includes(field.key))values[field.key]=Number(field.value)}
+ if(keys.some(key=>!Number.isInteger(values[key])))throw new Error('Die installierte Chess-Timer-Version unterstützt noch keine Web-Zeitlimits. Bitte zuerst die neue Version installieren.');
+ return values;
+}
+function checkMatch(config,expected){
+ const actual=getFieldValues(config);
+ for(const key of keys)if(actual[key]!==expected[key])throw new Error('Zeitlimit wurde nicht vollständig gespeichert ('+key+').');
+ if(config.warnings?.length)throw new Error('Die Uhr meldet ein Problem mit der App-Konfiguration.');
+}
+async function sendTimes(d,v){
+ const opt={user:d.user,pass:d.pass,timeout:8500};
+ const reply=await api(d.host,'/api/v1/apps/'+appName+'/config',{...opt,method:'PATCH',body:v});
+ assertResult(reply,'Bedenkzeit');
+ const now=await api(d.host,'/api/v1/apps/'+appName+'/config',opt);
+ checkMatch(now,v);
+}
+function showResults(rows,kind){
+ const ok=rows.filter(r=>r.ok).length;
+ $('resultTitle').textContent=ok===rows.length?(kind==='times'?'Zeitlimit übertragen.':'Installation abgeschlossen.'):ok?'Teilweise abgeschlossen.':'Übertragung fehlgeschlagen.';
+ $('resultSubtitle').textContent=kind==='times'?'Die Uhr(en) haben die gespeicherten Bedenkzeiten zurückgemeldet.':'Die Uhr(en) haben Installation und Konfiguration überprüft.';
+ $('resultCount').textContent=ok+' / '+rows.length+' erfolgreich';
+ const parent=$('resultList');parent.replaceChildren();
+ for(const r of rows){
+  const el=document.createElement('div');el.className='result-item'+(r.ok?'':' error');
+  el.innerHTML=`<span class="result-dot">${r.ok?'✓':'!'}</span><div><strong>${safe(r.host)} · ${safe(r.model.toUpperCase())}</strong><p>${safe(r.detail)}</p></div>`;
+  parent.append(el);
+ }
+ showStep(4);
+}
+async function loadSettings(){
+ const d=selected()[0];if(!d)return;
+ $('loadSettings').disabled=true;message('timeFeedback','Lese Zeitlimit von '+d.host+' …');
+ try{
+  const data=await api(d.host,'/api/v1/apps/'+appName+'/config',{user:d.user,pass:d.pass,timeout:6000});
+  const v=getFieldValues(data);applyTimes(v);
+  message('timeFeedback','Bedenkzeit von '+d.host+' übernommen.','good');
+ }catch(e){message('timeFeedback',e.message,'error')}finally{syncActions()}
+}
+async function saveSettings(){
+ if(installing||!selected().length)return;
+ let v;try{v=getTimes()}catch(e){message('timeFeedback',e.message,'error');return}
+ if(!window.confirm('Die neue Bedenkzeit wird gespeichert. Laufende Partien auf den ausgewählten Uhren werden dabei zurückgesetzt. Fortfahren?'))return;
+ installing=true;syncActions();$('saveSettings').disabled=true;
+ const rows=[];
+ for(const d of selected()){
+  message('timeFeedback','Speichere Zeitlimit auf '+d.host+' …');
+  try{await sendTimes(d,v);rows.push({host:d.host,model:d.model,ok:true,detail:timeString(v.white_min,v.white_sec)+' / '+timeString(v.black_min,v.black_sec)+' bestätigt.'})}
+  catch(e){rows.push({host:d.host,model:d.model,ok:false,detail:e.message})}
+ }
+ installing=false;syncActions();showResults(rows,'times');
+}
+function renderReview(){
+ const selectedDevices=selected();$('reviewCount').textContent=selectedDevices.length+' Uhren';
+ const v=getTimes();
+ $('reviewList').innerHTML=selectedDevices.map(d=>`<div class="review-item"><div><strong>${safe(d.hostname)}</strong><p>${safe(d.host)} · ${safe(labelFor(d))}</p></div><span class="tag">${timeString(v.white_min,v.white_sec)} / ${timeString(v.black_min,v.black_sec)}</span></div>`).join('');
+}
+async function install(){
+ if(installing)return;
+ let v;try{v=getTimes()}catch(e){message('installProgress',e.message,'error');return}
+ installing=true;$('installBtn').disabled=true;$('back3').disabled=true;syncActions();
+ const items=selected(),rows=[];
+ for(let i=0;i<items.length;i++){
+  const d=items[i];message('installProgress',`Übertrage an ${d.host} (${i+1} / ${items.length}) …`);
+  let uploaded=false;
+  try{
+   const latest=await detect(d.host,d.user,d.pass);
+   if(latest.model!==d.model)throw new Error('Der Gerätetyp hat sich geändert.');
+   const code=await sourceFor(d.model);
+   const reply=await api(d.host,'/api/v1/apps/script/'+appName,{method:'PUT',body:code,user:d.user,pass:d.pass,timeout:12000});
+   assertResult(reply,'Skriptinstallation');uploaded=true;
+   await sendTimes(d,v);
+   let detail='Installiert · Zeitlimit '+timeString(v.white_min,v.white_sec)+' / '+timeString(v.black_min,v.black_sec)+' gespeichert.';
+   if($('startAfter').checked){
+    try{const response=await api(d.host,'/api/v1/apps/active',{method:'PUT',body:{name:appName,fast:true},user:d.user,pass:d.pass,timeout:5000});
+     if(response?.ok!==true)throw Error('Start nicht bestätigt.');detail+=' App geöffnet.';
+    }catch(e){detail+=' App konnte nicht geöffnet werden: '+e.message}
+   }
+   rows.push({host:d.host,model:d.model,ok:true,detail});
+  }catch(e){rows.push({host:d.host,model:d.model,ok:false,detail:(uploaded?'Skript übertragen; Zeitlimit nicht bestätigt: ':'')+e.message})}
+ }
+ installing=false;$('back3').disabled=false;$('installBtn').disabled=false;showResults(rows,'install');
+}
+function pixel(ctx,x,y,col){ctx.fillStyle=col;ctx.fillRect(x,y,1,1)}
+function line(ctx,x1,y1,x2,y2,col){ctx.fillStyle=col;ctx.fillRect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1)+1,Math.abs(y2-y1)+1)}
+const masks=[63,6,91,79,102,109,125,7,127,111];
+function digit(ctx,x,y,n,c,big){
+ const m=masks[n];if(m===undefined)return;
+ if(big){
+  if(m&1)line(ctx,x,y,x+2,y,c);if(m&2)line(ctx,x+2,y+1,x+2,y+2,c);
+  if(m&4)line(ctx,x+2,y+4,x+2,y+5,c);if(m&8)line(ctx,x,y+6,x+2,y+6,c);
+  if(m&16)line(ctx,x,y+4,x,y+5,c);if(m&32)line(ctx,x,y+1,x,y+2,c);
+  if(m&64)line(ctx,x,y+3,x+2,y+3,c);
+ }else{
+  if(m&1)line(ctx,x,y,x+1,y,c);if(m&2)pixel(ctx,x+1,y+1,c);
+  if(m&4)pixel(ctx,x+1,y+3,c);if(m&8)line(ctx,x,y+4,x+1,y+4,c);
+  if(m&16)pixel(ctx,x,y+3,c);if(m&32)pixel(ctx,x,y+1,c);
+  if(m&64)line(ctx,x,y+2,x+1,y+2,c);
+ }
+}
+function paintTime(ctx,x,y,m,s,c,big){
+ const step=big?4:3;
+ digit(ctx,x,y,Math.floor(m/10),c,big);digit(ctx,x+step,y,m%10,c,big);
+ pixel(ctx,x+(big?8:6),y+(big?2:1),c);pixel(ctx,x+(big?8:6),y+(big?4:3),c);
+ digit(ctx,x+(big?10:8),y,Math.floor(s/10),c,big);digit(ctx,x+(big?14:11),y,s%10,c,big);
+}
+function previewCanvas(id,model,v){
+ const canvas=$(id),ctx=canvas.getContext('2d');
+ const w=model==='tc001'?32:52,h=model==='tc001'?8:16;
+ ctx.fillStyle='#050911';ctx.fillRect(0,0,w,h);
+ if(model==='tc001'){
+  paintTime(ctx,0,1,v.white_min,v.white_sec,'#80f4ec',false);
+  paintTime(ctx,19,1,v.black_min,v.black_sec,'#ffc878',false);
+  line(ctx,15,1,15,5,'#182735');line(ctx,16,1,16,5,'#182735');
+  pixel(ctx,14,3,'#66d5c1');pixel(ctx,17,3,'#66d5c1');
+ }else{
+  paintTime(ctx,4,5,v.white_min,v.white_sec,'#80f4ec',true);
+  paintTime(ctx,31,5,v.black_min,v.black_sec,'#ffc878',true);
+  line(ctx,25,2,25,13,'#172b3d');line(ctx,26,2,26,13,'#172b3d');
+  for(const x of [9,14])pixel(ctx,x,2,'#80f4ec');for(const x of [36,41])pixel(ctx,x,2,'#ffc878');
+  pixel(ctx,23,8,'#66d5c1');pixel(ctx,28,8,'#66d5c1');
+ }
+}
+function updatePreviews(){
+ let v;
+ try{v=getTimes()}catch{return}
+ for(const id of ['preview1','preview3'])previewCanvas(id,'tc001',v);
+ for(const id of ['preview2','preview4'])previewCanvas(id,'tc002',v);
+ for(const id of ['previewWhite','previewWhite2'])$(id).textContent=timeString(v.white_min,v.white_sec);
+ for(const id of ['previewBlack','previewBlack2'])$(id).textContent=timeString(v.black_min,v.black_sec);
+}
+async function copyText(value){
+ if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);return}
+ const el=document.createElement('textarea');el.value=value;el.style.position='fixed';el.style.left='-9999px';document.body.append(el);el.select();
+ const success=document.execCommand('copy');el.remove();if(!success)throw new Error('Kopieren nicht verfügbar. Bitte die .ax-Datei speichern.');
+}
+function showManual(){
+ $('manualSection').classList.remove('hidden');
+ $('manualSection').scrollIntoView({behavior:'smooth',block:'start'});
+}
+async function downloadScript(){
+ const model=$('manualModel').value;
+ try{
+  const text=(await sourceFor(model))+'\n';
+  const url=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));
+  const el=document.createElement('a');el.href=url;el.download='ChessTimer_'+model.toUpperCase()+'.ax';document.body.append(el);el.click();el.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  message('copyFeedback','Skript mit der gewählten Bedenkzeit gespeichert.','good');
+ }catch(e){message('copyFeedback',e.message,'error')}
+}
+$('scanBtn').addEventListener('click',scan);
+$('stopBtn').addEventListener('click',()=>{stopScan=true;for(const controller of controllers)controller.abort()});
+$('manualBtn').addEventListener('click',()=>addHost($('manualHost').value));
+$('manualHost').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addHost(e.target.value)}});
+$('offlineNext').addEventListener('click',()=>showStep(2));
+$('to2').addEventListener('click',()=>showStep(2));
+$('to3').addEventListener('click',()=>{try{renderReview();showStep(3)}catch(e){message('timeFeedback',e.message,'error')}});
+$('installBtn').addEventListener('click',install);
+$('saveSettings').addEventListener('click',saveSettings);
+$('loadSettings').addEventListener('click',loadSettings);
+for(const back of document.querySelectorAll('[data-back]'))back.addEventListener('click',()=>showStep(Number(back.dataset.back)));
+for(const key of keys)inputs[key].addEventListener('input',timeChanged);
+$('sameForBoth').addEventListener('change',timeChanged);
+for(const button of document.querySelectorAll('[data-minutes]'))button.addEventListener('click',()=>{
+ const n=Number(button.dataset.minutes);applyTimes({white_min:n,white_sec:0,black_min:n,black_sec:0});
+});
+$('manualShow').addEventListener('click',showManual);
+$('manualFinish').addEventListener('click',showManual);
+$('closeManual').addEventListener('click',()=>{$('manualSection').classList.add('hidden')});
+$('restartWizard').addEventListener('click',()=>showStep(1));
+$('reconfigure').addEventListener('click',()=>showStep(2));
+$('copyCode').addEventListener('click',async()=>{
+ try{await copyText(await sourceFor($('manualModel').value));message('copyFeedback','Skript mit der gewählten Bedenkzeit kopiert.','good')}
+ catch(e){message('copyFeedback',e.message,'error')}
+});
+$('downloadCode').addEventListener('click',downloadScript);
+$('openWeb').addEventListener('click',()=>{
+ try{const host=hostFrom($('manualURL').value||$('manualHost').value);window.open('http://'+host+'/','_blank','noopener,noreferrer')}
+ catch(e){message('copyFeedback',e.message,'error')}
+});
+timeChanged();
+})();
+</script>
+</body>
+</html>

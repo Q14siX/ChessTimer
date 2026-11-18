@@ -1,0 +1,194 @@
+# @name Chess Timer
+# @desc Two-player chess clock · Ulanzi TC001
+# @author Q14siX
+# @version 20261118.214215
+# @ondemand
+# @display 32x8
+# @config white_min number "Spieler 1 - Minuten" default=5 min=0 max=99 step=1 unit=min
+# @config white_sec number "Spieler 1 - Sekunden" default=0 min=0 max=59 step=1 unit=s
+# @config black_min number "Spieler 2 - Minuten" default=5 min=0 max=99 step=1 unit=min
+# @config black_sec number "Spieler 2 - Sekunden" default=0 min=0 max=59 step=1 unit=s
+
+class ChessTimer
+  var presets, choice, white_ms, black_ms, active, mode, flag, stamp
+  var left_long, right_long, segments
+
+  def init()
+    self.presets = [60000, 180000, 300000, 600000, 900000, 1800000]
+    self.choice = -1
+    self.segments = [63, 6, 91, 79, 102, 109, 125, 7, 127, 111]
+    self.left_long = false
+    self.right_long = false
+    self.reset_clock()
+  end
+
+  def reset_clock()
+    if self.choice < 0
+      self.white_ms = max(1000, (store.get("white_min") * 60 + store.get("white_sec")) * 1000)
+      self.black_ms = max(1000, (store.get("black_min") * 60 + store.get("black_sec")) * 1000)
+    else
+      self.white_ms = self.presets[self.choice]
+      self.black_ms = self.presets[self.choice]
+    end
+    self.active = 1
+    self.mode = 0
+    self.flag = 0
+    self.stamp = now_ms()
+  end
+
+  def cycle_preset(dir)
+    if self.mode == 1 return end
+    var n = self.presets.size() + 1
+    self.choice = (self.choice + 1 + dir + n) % n - 1
+    self.reset_clock()
+  end
+
+  def sync()
+    if self.mode != 1 return end
+    var t = now_ms()
+    var elapsed = max(0, t - self.stamp)
+    if self.active == 1
+      self.white_ms = max(0, self.white_ms - elapsed)
+      if self.white_ms == 0
+        self.mode = 3
+        self.flag = 1
+      end
+    else
+      self.black_ms = max(0, self.black_ms - elapsed)
+      if self.black_ms == 0
+        self.mode = 3
+        self.flag = 2
+      end
+    end
+    self.stamp = t
+  end
+
+  def remaining(player)
+    var ms = player == 1 ? self.white_ms : self.black_ms
+    if self.mode == 1 && self.active == player
+      ms = max(0, ms - max(0, now_ms() - self.stamp))
+    end
+    return ms
+  end
+
+  def toggle()
+    self.sync()
+    if self.mode == 0 || self.mode == 2
+      self.mode = 1
+      self.stamp = now_ms()
+    elif self.mode == 1
+      self.mode = 2
+    end
+  end
+
+  def finish_move(player)
+    self.sync()
+    if self.mode == 1 && self.active == player
+      self.active = 3 - player
+      self.stamp = now_ms()
+    end
+  end
+
+  def loop()
+    self.sync()
+  end
+
+  def on_hide()
+    self.sync()
+    if self.mode == 1 self.mode = 2 end
+    self.left_long = false
+    self.right_long = false
+  end
+
+  def on_button_event(btn, event)
+    if event == "press"
+      if btn == "left" self.left_long = false end
+      if btn == "right" self.right_long = false end
+      return true
+    end
+    if event == "long"
+      if btn == "left"
+        self.left_long = true
+        if self.mode != 1 self.reset_clock() end
+      elif btn == "right"
+        self.right_long = true
+        self.cycle_preset(1)
+      end
+      return true
+    end
+    if event == "release"
+      if btn == "select"
+        self.toggle()
+      elif btn == "left" && !self.left_long
+        self.finish_move(1)
+      elif btn == "right" && !self.right_long
+        self.finish_move(2)
+      end
+      return true
+    end
+    return true
+  end
+
+  def draw_digit(x, y, v, col)
+    var m = self.segments[v]
+    if (m & 1) != 0 line(x, y, x + 1, y, col) end
+    if (m & 2) != 0 pixel(x + 1, y + 1, col) end
+    if (m & 4) != 0 pixel(x + 1, y + 3, col) end
+    if (m & 8) != 0 line(x, y + 4, x + 1, y + 4, col) end
+    if (m & 16) != 0 pixel(x, y + 3, col) end
+    if (m & 32) != 0 pixel(x, y + 1, col) end
+    if (m & 64) != 0 line(x, y + 2, x + 1, y + 2, col) end
+  end
+
+  def draw_time(x, y, ms, col)
+    var s = (ms + 999) / 1000
+    var mins = s / 60
+    var secs = s % 60
+    self.draw_digit(x, y, mins / 10, col)
+    self.draw_digit(x + 3, y, mins % 10, col)
+    pixel(x + 6, y + 1, col)
+    pixel(x + 6, y + 3, col)
+    self.draw_digit(x + 8, y, secs / 10, col)
+    self.draw_digit(x + 11, y, secs % 10, col)
+  end
+
+  def draw()
+    clear()
+    var c1 = self.mode == 1 && self.active == 1 ? 0x80F4EC : 0x426A75
+    var c2 = self.mode == 1 && self.active == 2 ? 0xFFC878 : 0x806144
+    if self.mode == 0
+      c1 = 0x80F4EC
+      c2 = 0xFFC878
+    end
+    if self.flag == 1 c1 = (now_ms() % 700 < 350) ? 0xFF535D : 0x771A20 end
+    if self.flag == 2 c2 = (now_ms() % 700 < 350) ? 0xFF535D : 0x771A20 end
+    self.draw_time(0, 1, self.remaining(1), c1)
+    self.draw_time(19, 1, self.remaining(2), c2)
+    line(15, 1, 15, 5, 0x182735)
+    line(16, 1, 16, 5, 0x182735)
+    if self.mode == 1
+      if self.active == 1
+        line(0, 0, 12, 0, 0x3DE4D0)
+        line(0, 7, 12, 7, 0x156F6C)
+        pixel(14, 3, 0x3DE4D0)
+      else
+        line(19, 0, 31, 0, 0xFFAD45)
+        line(19, 7, 31, 7, 0x89501F)
+        pixel(17, 3, 0xFFAD45)
+      end
+    elif self.mode == 2
+      pixel(14, 2, 0xFFE5A2)
+      pixel(14, 4, 0xFFE5A2)
+      pixel(17, 2, 0xFFE5A2)
+      pixel(17, 4, 0xFFE5A2)
+    elif self.mode == 3
+      pixel(14, 3, 0xFF535D)
+      pixel(17, 3, 0xFF535D)
+    else
+      pixel(14, 3, 0x66D5C1)
+      pixel(17, 3, 0x66D5C1)
+    end
+  end
+end
+
+return ChessTimer()
